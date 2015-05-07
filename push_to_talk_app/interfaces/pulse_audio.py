@@ -1,4 +1,6 @@
-# Copyright (c) 2012 Adam Coddington
+# Copyright (c) 2015 Paranox
+#
+# Based on the work done by Adam Coddington
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -61,11 +63,15 @@ class PulseAudioInterface(object):
                         'sound': details[3],
                         'status': details[4],
                     }
-            self.logger.debug("Found device %s" % parsed['name'])
-            self.INPUTS[index] = parsed
+            if ('input' in parsed['name']):
+                self.logger.debug("Found device %s" % parsed['name'])
+                self.INPUTS[index] = parsed
+            else:
+                self.logger.debug("Ignoring " + parsed['name'])
 
     def mute(self):
         for index in self.INPUTS.keys():
+            self.logger.debug("Muting " + self.INPUTS[index]['name'])
             subprocess.call([
                     'pactl',
                     'set-source-mute',
@@ -75,6 +81,7 @@ class PulseAudioInterface(object):
 
     def unmute(self):
         for index in self.INPUTS.keys():
+            self.logger.debug("Unmuting " + self.INPUTS[index]['name'])
             retval = subprocess.call([
                     'pactl',
                     'set-source-mute',

@@ -7,8 +7,8 @@ setup(
     version=get_version(),
     url='http://bitbucket.org/latestrevision/linux-push-to-talk/',
     description='Push-to-talk functionality for Linux',
-    author='Adam Coddington',
-    author_email='me@adamcoddington.net',
+    author='Paranox',
+    author_email='paranoxius@gmail.com',
     classifiers=[
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',

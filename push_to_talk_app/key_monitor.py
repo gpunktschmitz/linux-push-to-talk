@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
-# Copyright (c) 2012 Adam Coddington
+# Copyright (c) 2015 Paranox
+#
+# Based on the work done by Adam Coddington
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -105,6 +107,7 @@ class KeyMonitor(object):
             print "\n%s PRESS" % key
 
     def start(self):
+        self.logger.debug("KeyMonitor starting...")
         self.ctx = self.record_dpy.record_create_context(
             0,
             [record.AllClients],
