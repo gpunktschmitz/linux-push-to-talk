@@ -1,6 +1,6 @@
-# Copyright (c) 2015 Paranox
+# Copyright (c) 2020 Guenther Schmitz
 #
-# Based on the work done by Adam Coddington
+# Based on the work done by Adam Coddington and Paranox
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -20,8 +20,8 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-__author__ = 'Paranox <paranoxius@gmail.com>'
-__version__ = '0.2'
+__author__ = 'Guenther Schhmitz>'
+__version__ = (1, 0, 5)
 
 def get_version():
     return '.'.join(str(bit) for bit in __version__)

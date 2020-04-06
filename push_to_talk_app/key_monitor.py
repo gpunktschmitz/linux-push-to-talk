@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-# Copyright (c) 2015 Paranox
+# Copyright (c) 2020 Guenther Schmitz
 #
-# Based on the work done by Adam Coddington
+# Based on the work done by Adam Coddington and Paranox
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -24,6 +24,8 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import os.path
 import logging
+import shlex
+import subprocess
 
 from Xlib import display, X
 from Xlib.ext import record
@@ -53,6 +55,8 @@ class KeyMonitor(object):
 
         self.configured_keycode = None
         self.state = KeyMonitor.MUTED
+        self.ffmpegCommand = False #'ffmpeg -re -i /home/gpunktschmitz/Videos/nyancat.mp4 -map 0:v -vf hflip -f v4l2 /dev/video0'
+        self.ffmpegProcess = False
 
         if test == True:
             self.handler = self.print_action
@@ -97,8 +101,18 @@ class KeyMonitor(object):
         configured = self.get_configured_keycode()
         if action == KeyMonitor.PRESS and key == configured:
             self.set_state(KeyMonitor.UNMUTED)
+            if self.ffmpegCommand:
+                ffmpegArgs = shlex.split(self.ffmpegCommand)
+                if not self.ffmpegProcess:
+                    self.ffmpegProcess = subprocess.Popen(ffmpegArgs, shell=False)
+                else:
+                    if self.ffmpegProcess.poll() != None:
+                        self.ffmpegProcess = subprocess.Popen(ffmpegArgs, shell=False)
         elif action == KeyMonitor.RELEASE and key == configured:
             self.set_state(KeyMonitor.MUTED)
+            if self.ffmpegProcess:
+                subprocess.call(["kill", "-9", "%d" % self.ffmpegProcess.pid])
+                self.ffmpegProcess = False
 
     def print_action(self, key, action):
         if action == KeyMonitor.RELEASE:
