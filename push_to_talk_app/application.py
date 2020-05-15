@@ -26,6 +26,8 @@
 import os
 import os.path
 import logging
+import shlex
+import subprocess
 
 from multiprocessing import Process, Queue
 from gi.repository import GObject, Gtk, Gdk, Gio, GLib
@@ -54,7 +56,17 @@ class PushToTalk(Gtk.Window):
 
         self.audio_interface = self.selected_audio_interface()
         self.audio_interface.mute()
-
+        
+        self.ffmpegVideoMuted = False #'/home/gpunktschmitz/Videos/thisisfine.mp4'
+        self.ffmpegVideoUnmuted = False #'/home/gpunktschmitz/Videos/nyancat.mp4'
+        self.ffmpegCommand = False #'ffmpeg -re -i %s -map 0:v -f v4l2 /dev/video0'
+        self.ffmpegProcess = False
+        self.ffmpegState = KeyMonitor.MUTED
+        self.state = KeyMonitor.MUTED
+        
+        if self.ffmpegCommand:
+            self.playvideo()
+        
         self.setup_menu()
 
         self.start()
@@ -149,6 +161,27 @@ class PushToTalk(Gtk.Window):
         accelgroup = uimanager.get_accel_group()
         self.add_accel_group(accelgroup)
         return uimanager
+    
+    def playvideo(self):
+        if self.ffmpegCommand:
+            if self.state == KeyMonitor.MUTED:
+                ffmpegCommand = self.ffmpegCommand % self.ffmpegVideoMuted
+            else:
+                ffmpegCommand = self.ffmpegCommand % self.ffmpegVideoUnmuted
+            if not self.ffmpegProcess:
+                ffmpegArgs = shlex.split(ffmpegCommand)
+                self.ffmpegProcess = subprocess.Popen(ffmpegArgs, shell=False)
+            else:
+                if self.ffmpegState != self.state:
+                    self.ffmpegState = self.state
+                    if self.ffmpegProcess.pid:
+                        subprocess.call(["kill", "-9", "%d" % self.ffmpegProcess.pid])
+                    ffmpegArgs = shlex.split(ffmpegCommand)
+                    self.ffmpegProcess = subprocess.Popen(ffmpegArgs, shell=False)
+                if self.ffmpegProcess.poll() != None:
+                    ffmpegArgs = shlex.split(ffmpegCommand)
+                    self.ffmpegProcess = subprocess.Popen(ffmpegArgs, shell=False)
+        return True
 
     def start(self):
         self.pipe = Queue()
@@ -162,9 +195,12 @@ class PushToTalk(Gtk.Window):
 
         self.logger.debug("Process spawned")
         GObject.timeout_add(PushToTalk.INTERVAL, self.read_incoming_pipe)
+        GObject.timeout_add(PushToTalk.INTERVAL, self.playvideo)
 
     def stop(self):
         self.logger.debug("Killing process...")
+        if self.ffmpegProcess:
+            subprocess.call(["kill", "-9", "%d" % self.ffmpegProcess.pid])
         self.p.terminate()
         self.p.join()
         if (self.audio_interface):
@@ -276,10 +312,12 @@ class PushToTalk(Gtk.Window):
     def set_talk(self):
         self.logger.debug("Unmuted")
         self.LABEL.set_text("Microphone activated")
+        self.state = KeyMonitor.UNMUTED
 
     def set_mute(self):
         self.logger.debug("Muted")
         self.LABEL.set_text("Microphone muted")
+        self.state = KeyMonitor.MUTED
 
     def set_key(self):
         self.logger.debug("Attempting to set key...")

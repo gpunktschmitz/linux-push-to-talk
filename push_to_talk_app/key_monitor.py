@@ -24,8 +24,6 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import os.path
 import logging
-import shlex
-import subprocess
 
 from Xlib import display, X
 from Xlib.ext import record
@@ -55,8 +53,6 @@ class KeyMonitor(object):
 
         self.configured_keycode = None
         self.state = KeyMonitor.MUTED
-        self.ffmpegCommand = False #'ffmpeg -re -i /home/gpunktschmitz/Videos/nyancat.mp4 -map 0:v -vf hflip -f v4l2 /dev/video0'
-        self.ffmpegProcess = False
 
         if test == True:
             self.handler = self.print_action
@@ -99,26 +95,17 @@ class KeyMonitor(object):
 
     def interface_handler(self, key, action):
         configured = self.get_configured_keycode()
-        if action == KeyMonitor.PRESS and key == configured:
-            self.set_state(KeyMonitor.UNMUTED)
-            if self.ffmpegCommand:
-                ffmpegArgs = shlex.split(self.ffmpegCommand)
-                if not self.ffmpegProcess:
-                    self.ffmpegProcess = subprocess.Popen(ffmpegArgs, shell=False)
-                else:
-                    if self.ffmpegProcess.poll() != None:
-                        self.ffmpegProcess = subprocess.Popen(ffmpegArgs, shell=False)
-        elif action == KeyMonitor.RELEASE and key == configured:
-            self.set_state(KeyMonitor.MUTED)
-            if self.ffmpegProcess:
-                subprocess.call(["kill", "-9", "%d" % self.ffmpegProcess.pid])
-                self.ffmpegProcess = False
+        if key == configured:
+            if action == KeyMonitor.PRESS:
+                self.set_state(KeyMonitor.UNMUTED)
+            else:
+                self.set_state(KeyMonitor.MUTED)
 
     def print_action(self, key, action):
         if action == KeyMonitor.RELEASE:
-            print "\n%s RELEASE" % key
+            print("\n%s RELEASE" % key)
         elif action == KeyMonitor.PRESS:
-            print "\n%s PRESS" % key
+            print("\n%s PRESS" % key)
 
     def start(self):
         self.logger.debug("KeyMonitor starting...")
