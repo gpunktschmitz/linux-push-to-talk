@@ -12,7 +12,8 @@ On Ubuntu, this is as easy as running ``sudo apt-get install python-setuptools p
 
 ## Installation
 
- 1. Run ``sudo python setup.py install``.
+ 1. Edit ffmpeg parameters in ``application.py`` as wanted
+ 2. Run ``sudo python setup.py install``.
  2. Run ``ptt``.
  
 If the application immediately closes with the message "You must log-out and log-in again for your system tray icon to appear.", log-out and log-back in again; a system settings change was required.
